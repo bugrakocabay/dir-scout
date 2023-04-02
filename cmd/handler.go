@@ -16,6 +16,7 @@ func Do() {
 		panic("Usage: [https://url.com] [wordlist.txt]")
 	}
 
+	getConfigTemplate(args[0], args[1])
 	scanner, err := readFile(args[1])
 	if err != nil {
 		panic(err)
