@@ -4,9 +4,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"sync"
 )
 
-func processLine(client *http.Client, baseURL string, line string) {
+func processLine(client *http.Client, baseURL string, line string, wg *sync.WaitGroup, ch chan int) {
+	defer wg.Done()
+
+	if !strings.Contains(baseURL, "http") {
+		baseURL = fmt.Sprintf("https://%s", baseURL)
+	}
+
 	fullURL := fmt.Sprintf("%s/%s", baseURL, line)
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
@@ -19,7 +27,10 @@ func processLine(client *http.Client, baseURL string, line string) {
 		return
 	}
 	defer resp.Body.Close()
+
 	if resp.StatusCode < 400 {
-		fmt.Printf("/%s: %d\n", line, resp.StatusCode)
+		log.Printf("%s: %d", line, resp.StatusCode)
 	}
+
+	ch <- 1
 }

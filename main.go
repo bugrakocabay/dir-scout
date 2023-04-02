@@ -1,38 +1,43 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"sync"
 )
 
 func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int)
+
 	args := os.Args[1:]
 	if len(args) != 2 {
 		log.Fatal("Usage: [https://url.com] [wordlist.txt]")
 	}
 
-	reader, err := readFile(args[1])
+	scanner, err := readFile(args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	client := &http.Client{}
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				if line != "" {
-					// process the final line even if it does not end with '\n'
-					processLine(client, args[0], strings.TrimSpace(line))
-				}
-				break
-			}
-			log.Fatal("error reading the file:", err)
-		}
-		// process the line normally if it ends with '\n'
-		processLine(client, args[0], strings.TrimSpace(line))
+	for scanner.Scan() {
+		line := scanner.Text()
+		wg.Add(1)
+
+		go processLine(client, args[0], line, &wg, ch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for range ch {
+	}
+
+	if err = scanner.Err(); err != nil {
+		log.Fatalf("error reading file: %v", err)
 	}
 }
