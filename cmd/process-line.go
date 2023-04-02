@@ -1,8 +1,7 @@
-package main
+package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -18,19 +17,13 @@ func processLine(client *http.Client, baseURL string, line string, wg *sync.Wait
 	fullURL := fmt.Sprintf("%s/%s", baseURL, line)
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode < 400 {
-		log.Printf("%s: %d", line, resp.StatusCode)
-	}
 
 	ch <- 1
 }
