@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"github.com/bugrakocabay/endpoint-brute/cmd/utils"
 	"log"
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 func Do() {
@@ -16,12 +18,8 @@ func Do() {
 		panic("Usage: [https://url.com] [wordlist.txt]")
 	}
 
-	getConfigTemplate(args[0], args[1])
+	utils.ShowBanner(args[0], args[1])
 	scanner, err := readFile(args[1])
-	if err != nil {
-		panic(err)
-	}
-
 	if err != nil {
 		panic(err)
 	}
@@ -32,6 +30,7 @@ func Do() {
 		wg.Add(1)
 
 		go processLine(client, args[0], line, &wg, ch)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	go func() {

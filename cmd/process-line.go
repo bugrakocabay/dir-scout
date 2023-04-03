@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"github.com/fatih/color"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -26,8 +27,9 @@ func processLine(client *http.Client, baseURL string, line string, wg *sync.Wait
 	}
 	defer resp.Body.Close()
 
+	successString := color.HiMagentaString("+ ") + color.RedString("/"+line) + " " + color.GreenString(strconv.Itoa(resp.StatusCode))
 	if resp.StatusCode < 400 {
-		log.Printf("/%s: %d", line, resp.StatusCode)
+		fmt.Println(successString)
 	}
 	ch <- 1
 }
