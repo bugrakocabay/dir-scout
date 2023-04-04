@@ -2,14 +2,15 @@ package scanner
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
 )
 
-func processLine(client *http.Client, baseURL string, line string, wg *sync.WaitGroup, ch chan int) {
+func processLine(client *http.Client, baseURL string, line string, wg *sync.WaitGroup, ch chan string, success bool) {
 	defer wg.Done()
 
 	if !strings.HasSuffix(baseURL, "http") {
@@ -28,9 +29,18 @@ func processLine(client *http.Client, baseURL string, line string, wg *sync.Wait
 	}
 	defer resp.Body.Close()
 
-	successString := color.HiMagentaString("+ ") + color.RedString("/"+line) + " " + color.GreenString(strconv.Itoa(resp.StatusCode))
-	if resp.StatusCode < 400 {
-		fmt.Println(successString)
+	var responseString string
+	if success {
+		if resp.StatusCode < 400 {
+			responseString = color.HiMagentaString("+ "+"/"+line) + " " + color.GreenString(strconv.Itoa(resp.StatusCode))
+		}
+	} else {
+		if resp.StatusCode < 400 {
+			responseString = color.HiMagentaString("+ "+"/"+line) + " " + color.GreenString(strconv.Itoa(resp.StatusCode))
+		} else {
+			responseString = color.HiMagentaString("- "+"/"+line) + " " + color.RedString(strconv.Itoa(resp.StatusCode))
+		}
 	}
-	ch <- 1
+
+	ch <- responseString
 }

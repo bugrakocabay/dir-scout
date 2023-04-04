@@ -2,14 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 type Config struct {
-	url       string
-	wordlist  string
-	verbosity int16
+	Url       string
+	Wordlist  string
+	Verbosity int16
+	Output    string
+	Success   bool
 	// add more fields here for your other flags
 }
 
@@ -22,12 +25,17 @@ to feed a wordlist and brute force them to a given URL.`,
 	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt16("verbosity")
-		config := Config{
-			url:       args[0],
-			wordlist:  args[1],
-			verbosity: verbosity,
+		output, _ := cmd.Flags().GetString("output")
+		success, _ := cmd.Flags().GetBool("success")
+
+		config := &Config{
+			Url:       args[0],
+			Wordlist:  args[1],
+			Verbosity: verbosity,
+			Output:    output,
+			Success:   success,
 		}
-		Do(cmd, config)
+		Do(cmd, *config)
 	},
 }
 
@@ -40,4 +48,6 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().Int16P("verbosity", "v", 5, "Provide a value between 0-10")
+	rootCmd.Flags().StringP("output", "o", "", "output file name")
+	rootCmd.Flags().BoolP("success", "s", false, "filters out status codes 400 and above")
 }

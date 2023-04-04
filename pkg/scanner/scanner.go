@@ -5,36 +5,44 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/bugrakocabay/endpoint-brute/cmd"
 )
 
-func Scanner(url, filename string, verbosity int16) {
-	var wg sync.WaitGroup
-	ch := make(chan int)
+type Impl struct{}
 
-	scanner, err := readFile(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	client := &http.Client{}
-	for scanner.Scan() {
-		line := scanner.Text()
-		wg.Add(1)
-
-		go processLine(client, url, line, &wg, ch)
-		t := time.Duration(1000 / verbosity)
-		time.Sleep(time.Millisecond * t)
-	}
+func (s *Impl) Scanner(config cmd.Config) chan string {
+	ch := make(chan string)
 
 	go func() {
+		var wg sync.WaitGroup
+
+		scanner, err := readFile(config.Wordlist)
+		if err != nil {
+			panic(err)
+		}
+
+		client := &http.Client{}
+		for scanner.Scan() {
+			line := scanner.Text()
+			wg.Add(1)
+
+			go processLine(client, config.Url, line, &wg, ch, config.Success)
+			t := time.Duration(1000 / config.Verbosity)
+			time.Sleep(time.Millisecond * t)
+		}
+
 		wg.Wait()
 		close(ch)
+
+		if err = scanner.Err(); err != nil {
+			log.Fatalf("error reading file: %v", err)
+		}
 	}()
 
-	for range ch {
-	}
+	return ch
+}
 
-	if err = scanner.Err(); err != nil {
-		log.Fatalf("error reading file: %v", err)
-	}
+func NewScanner() *Impl {
+	return &Impl{}
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	"github.com/fatih/color"
 )
 
@@ -11,7 +12,7 @@ const (
  _  _/ '_/ __  _/' _ _   _ _   
 (-/|/|))/     (//_) ( ()(-/ (/ 
    /                        /        `
-	ruler = "------------------------------------------------------"
+	ruler = "======================================================"
 )
 
 func ShowBanner(baseURL, wordlist string) {
