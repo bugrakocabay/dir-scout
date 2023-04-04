@@ -1,4 +1,4 @@
-package cmd
+package scanner
 
 import (
 	"fmt"
@@ -21,6 +21,7 @@ func processLine(client *http.Client, baseURL string, line string, wg *sync.Wait
 	if err != nil {
 		return
 	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
 	resp, err := client.Do(req)
 	if err != nil {
 		return
