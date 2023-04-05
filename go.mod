@@ -1,4 +1,4 @@
-module github.com/bugrakocabay/endpoint-brute
+module github.com/bugrakocabay/dir-scout
 
 go 1.19
 
