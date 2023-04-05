@@ -2,18 +2,13 @@ package scanner
 
 import (
 	"log"
-	"net/http"
 	"sync"
 	"time"
 
-	"github.com/bugrakocabay/endpoint-brute/cmd"
+	"github.com/bugrakocabay/dir-scout/cmd/config"
 )
 
-type Impl struct{}
-
-func (s *Impl) Scanner(config cmd.Config) chan string {
-	ch := make(chan string)
-
+func Scanner(config config.Config, ch chan map[string]int) chan map[string]int {
 	go func() {
 		var wg sync.WaitGroup
 
@@ -22,12 +17,11 @@ func (s *Impl) Scanner(config cmd.Config) chan string {
 			panic(err)
 		}
 
-		client := &http.Client{}
 		for scanner.Scan() {
 			line := scanner.Text()
 			wg.Add(1)
 
-			go processLine(client, config.Url, line, &wg, ch, config.Success)
+			go processLine(config.Url, line, &wg, ch)
 			t := time.Duration(1000 / config.Verbosity)
 			time.Sleep(time.Millisecond * t)
 		}
@@ -41,8 +35,4 @@ func (s *Impl) Scanner(config cmd.Config) chan string {
 	}()
 
 	return ch
-}
-
-func NewScanner() *Impl {
-	return &Impl{}
 }

@@ -4,17 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	flagConfig "github.com/bugrakocabay/dir-scout/cmd/config"
 	"github.com/spf13/cobra"
 )
-
-type Config struct {
-	Url       string
-	Wordlist  string
-	Verbosity int16
-	Output    string
-	Success   bool
-	// add more fields here for your other flags
-}
 
 var rootCmd = &cobra.Command{
 	Use:   "endpoint-discovery [https://url.com] [wordlist.txt]",
@@ -28,14 +20,14 @@ to feed a wordlist and brute force them to a given URL.`,
 		output, _ := cmd.Flags().GetString("output")
 		success, _ := cmd.Flags().GetBool("success")
 
-		config := &Config{
+		config := flagConfig.Config{
 			Url:       args[0],
 			Wordlist:  args[1],
 			Verbosity: verbosity,
 			Output:    output,
 			Success:   success,
 		}
-		Do(cmd, *config)
+		Do(cmd, config)
 	},
 }
 
